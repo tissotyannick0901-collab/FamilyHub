@@ -1,0 +1,26 @@
+name: "FamilyHub"
+description: "Application de gestion familiale — agenda, taches, budget, courses, documents et plus."
+version: "3.0.0"
+slug: "familyhub"
+url: "https://github.com/ton-compte/familyhub-addon"
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+startup: application
+boot: auto
+ingress: true
+ingress_port: 3000
+panel_icon: mdi:home-heart
+panel_title: FamilyHub
+homeassistant_api: true
+options:
+  secret: ""
+  log_level: "info"
+schema:
+  secret: str
+  log_level: list(debug|info|warning|error)
+map:
+  - data:rw
