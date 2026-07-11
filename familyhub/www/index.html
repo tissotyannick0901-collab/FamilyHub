@@ -588,6 +588,70 @@ textarea.fi { min-height: 90px; resize: vertical; }
   .perm-toggle-sm.on { background:var(--lime); }
   .perm-toggle-sm::after { content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .18s;box-shadow:0 1px 2px rgba(0,0,0,.2); }
   .perm-toggle-sm.on::after { left:16px; }
+
+  /* ══════════════════════════════════════════════
+     MODULE COPARENTALITÉ
+  ══════════════════════════════════════════════ */
+  .copa-solde-card {
+    border-radius: var(--r); padding: 20px; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .copa-solde-card.positif { background: linear-gradient(135deg,#F7FEE7,#ECFCCB); }
+  .copa-solde-card.negatif { background: linear-gradient(135deg,#FFF1F2,#FFE4E6); }
+  .copa-solde-card.neutre  { background: linear-gradient(135deg,#F0F9FF,#E0F2FE); }
+  .copa-solde-lbl  { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text3); margin-bottom:4px; }
+  .copa-solde-val  { font-size:36px; font-weight:900; line-height:1; }
+  .copa-solde-sub  { font-size:12px; font-weight:600; color:var(--text3); margin-top:4px; }
+  .copa-solde-ico  { font-size:48px; opacity:.8; }
+
+  .copa-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+  .copa-stat  { background:var(--white); border-radius:var(--r-sm); padding:12px; text-align:center; box-shadow:var(--shadow); }
+  .copa-stat-n { font-size:20px; font-weight:900; }
+  .copa-stat-l { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.3px; margin-top:2px; }
+
+  .copa-item {
+    background:var(--white); border-radius:var(--r-sm); margin-bottom:8px;
+    box-shadow:var(--shadow); overflow:hidden; cursor:pointer;
+  }
+  .copa-item-main { display:flex; align-items:flex-start; gap:10px; padding:12px 13px; }
+  .copa-item-ico  { font-size:22px; flex-shrink:0; width:32px; text-align:center; }
+  .copa-item-body { flex:1; min-width:0; }
+  .copa-item-desc { font-size:14px; font-weight:700; }
+  .copa-item-meta { font-size:11px; color:var(--text3); font-weight:500; margin-top:3px; display:flex; gap:8px; flex-wrap:wrap; }
+  .copa-item-amt  { text-align:right; }
+  .copa-item-total { font-size:16px; font-weight:900; }
+  .copa-item-share { font-size:11px; font-weight:600; margin-top:2px; }
+  .copa-item-bar  { height:3px; }
+
+  .copa-child-tag {
+    display:inline-flex; align-items:center; padding:2px 8px;
+    border-radius:10px; font-size:11px; font-weight:700;
+    background:var(--mist2); color:var(--text2);
+  }
+
+  .copa-pct-row { display:flex; gap:8px; align-items:center; }
+  .copa-pct-btn {
+    flex:1; padding:8px; border-radius:var(--r-sm); border:1.5px solid var(--border);
+    background:var(--white); font-family:var(--f); font-size:13px; font-weight:700;
+    cursor:pointer; text-align:center; transition:all .12s; color:var(--text2);
+  }
+  .copa-pct-btn.on { background:var(--lime); border-color:var(--lime); color:var(--ink); }
+
+  .month-section { margin-bottom:20px; }
+  .month-header  {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 13px; background:var(--mist2); border-radius:var(--r-sm);
+    margin-bottom:8px; cursor:pointer;
+  }
+  .month-header-lbl { font-size:13px; font-weight:800; }
+  .month-header-solde { font-size:13px; font-weight:800; }
+
+  .copa-remb-badge {
+    display:inline-flex; align-items:center; padding:3px 9px;
+    border-radius:10px; font-size:11px; font-weight:700;
+  }
+  .copa-remb-badge.paid   { background:var(--lime-bg); color:var(--lime2); }
+  .copa-remb-badge.unpaid { background:var(--rose-bg); color:var(--rose); }
 </style>
 </head>
 <body>
@@ -939,6 +1003,59 @@ textarea.fi { min-height: 90px; resize: vertical; }
         </div>
       </div>
     </div>
+
+    <!-- COPARENTALITÉ -->
+    <div class="view" id="v-copa">
+      <div class="vp">
+        <!-- Solde global -->
+        <div id="copaGlobalSolde"></div>
+
+        <!-- Onglets -->
+        <div class="view-tabs">
+          <button class="vtab on" onclick="setCopaTab('solde')">💰 Solde</button>
+          <button class="vtab" onclick="setCopaTab('jepaye')">📤 Je paie</button>
+          <button class="vtab" onclick="setCopaTab('ellepaye')">📥 Elle paie</button>
+          <button class="vtab" onclick="setCopaTab('history')">📋 Historique</button>
+        </div>
+
+        <!-- Solde détaillé par enfant -->
+        <div id="copaTab-solde">
+          <div id="copaEnfantsSolde"></div>
+          <div class="sec-head" style="margin-top:16px">
+            <div class="sec-title" style="font-size:15px">📊 Ce mois-ci</div>
+          </div>
+          <div id="copaMoisEnCours"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn btn-lime btn-sm" onclick="openCopaRemboursementModal()">✅ Enregistrer un remboursement</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportCopaExcel()">📊 Export Excel</button>
+          </div>
+        </div>
+
+        <!-- Dépenses que JE paie -->
+        <div id="copaTab-jepaye" style="display:none">
+          <div class="sec-head">
+            <div style="font-size:13px;color:var(--text3);font-weight:600">Dépenses avancées par moi</div>
+            <button class="btn btn-lime btn-sm" onclick="openCopaDepModal('moi')">+ Dépense</button>
+          </div>
+          <div id="copaListMoi"></div>
+        </div>
+
+        <!-- Dépenses qu'ELLE paie -->
+        <div id="copaTab-ellepaye" style="display:none">
+          <div class="sec-head">
+            <div style="font-size:13px;color:var(--text3);font-weight:600">Dépenses avancées par elle</div>
+            <button class="btn btn-lime btn-sm" onclick="openCopaDepModal('elle')">+ Dépense</button>
+          </div>
+          <div id="copaListElle"></div>
+        </div>
+
+        <!-- Historique mensuel -->
+        <div id="copaTab-history" style="display:none">
+          <div id="copaHistoryList"></div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 
   <!-- BOTTOM NAV -->
@@ -1432,6 +1549,14 @@ let S = {
   docs:[], meds:[], vaccines:[], appts:[],
   kids:{},
   vacIdeas:[], projs:[],
+  // Module coparentalité
+  copa:{
+    exNom:'Elle',           // Nom de l'ex (configurable)
+    moiNom:'Moi',
+    enfants:[],             // [{id,nom,avatar,couleur}] — liés aux membres enfants
+    depenses:[],            // [{id,desc,montant,date,cat,payeur,enfants[],pctMoi,note,rembourse}]
+    remboursements:[],      // [{id,montant,date,sens,mode,note}]
+  },
   eventTypes:[],
   appSettings:{familyName:'FamilyHub',themeColor:'#84CC16',alwaysPin:false,autoLock:false},
   nasUrl:'', nasSecret:'', lastSync:null,
@@ -1688,7 +1813,7 @@ function isSubTabEnabled(tabId,subId) {
 }
 function renderView(v) {
   const map={home:renderHome,agenda:renderAgenda,tasks:renderTasks,shop:renderShop,
-    budget:renderBudget,docs:renderDocs,kids:renderKids,settings:renderSettings,leisure:renderLeisure};
+    budget:renderBudget,docs:renderDocs,kids:renderKids,settings:renderSettings,leisure:renderLeisure,copa:renderCopa};
   if(map[v]) { map[v](); return; }
   if(v?.startsWith('custom_')) { renderCustomTabView(v.replace('custom_','')); return; }
 }
@@ -1735,6 +1860,7 @@ function renderDrawer() {
     {id:'docs',ico:'📄',lbl:'Documents & Santé'},
     {id:'kids',ico:'🎒',lbl:'Enfants'},
     {id:'leisure',ico:'✈️',lbl:'Loisirs'},
+    {id:'copa',ico:'👨‍👧‍👦',lbl:'Coparentalité'},
     {id:'settings',ico:'⚙️',lbl:'Paramètres'},
   ];
   const grid=document.getElementById('drawerGrid');
@@ -4098,7 +4224,679 @@ function startHaSync() {
 if(typeof startHaSync === 'function') startHaSync();
 
 </script>
+
+<!-- Modal dépense coparentalité -->
+<div class="modal-ov" id="m-copa-dep"><div class="modal">
+  <div class="modal-bar"></div>
+  <div class="modal-title">💸 <span id="mcd-title">Dépense</span></div>
+  <input type="hidden" id="mcd-id">
+  <input type="hidden" id="mcd-payeur">
+
+  <div class="fg"><label class="fl">Description *</label>
+    <input class="fi" id="mcd-desc" placeholder="ex: Médecin, Fournitures scolaires, Activité…">
+  </div>
+
+  <div class="grid2">
+    <div class="fg"><label class="fl">Montant total (€) *</label>
+      <input class="fi" type="number" id="mcd-montant" placeholder="0.00" step="0.01" min="0"
+        oninput="updateCopaPartCalc()">
+    </div>
+    <div class="fg"><label class="fl">Date *</label>
+      <input class="fi" type="date" id="mcd-date">
+    </div>
+  </div>
+
+  <div class="fg"><label class="fl">Catégorie</label>
+    <select class="fi" id="mcd-cat">
+      <option value="sante">🏥 Santé / Médical</option>
+      <option value="scolarite">📚 Scolarité</option>
+      <option value="activite">⚽ Activité extra-scolaire</option>
+      <option value="habillement">👕 Habillement</option>
+      <option value="transport">🚗 Transport</option>
+      <option value="loisir">🎉 Loisir / Vacances</option>
+      <option value="alimentation">🛒 Alimentation</option>
+      <option value="autre">📌 Autre</option>
+    </select>
+  </div>
+
+  <div class="fg"><label class="fl">Enfant(s) concerné(s) *</label>
+    <div id="mcd-enfants" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+
+  <div class="fg">
+    <label class="fl">Partage</label>
+    <div class="copa-pct-row" id="mcd-pct-btns">
+      <button class="copa-pct-btn on" data-pct="50" onclick="setCopaPartage(50)">50 / 50</button>
+      <button class="copa-pct-btn" data-pct="100" onclick="setCopaPartage(100)">100% moi</button>
+      <button class="copa-pct-btn" data-pct="0" onclick="setCopaPartage(0)">100% elle</button>
+      <button class="copa-pct-btn" data-pct="custom" onclick="setCopaPartage('custom')">Autre %</button>
+    </div>
+    <div id="mcd-custom-pct" style="display:none;margin-top:8px">
+      <input class="fi" type="number" id="mcd-pct-custom" placeholder="Ma part en % (ex: 60)"
+        min="0" max="100" oninput="updateCopaPartCalc()">
+    </div>
+  </div>
+
+  <div id="mcd-calc" style="background:var(--mist);border-radius:var(--r-sm);padding:12px;font-size:13px;font-weight:600;margin-bottom:14px;display:none">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span>Ma part :</span><span id="mcd-calc-moi" style="color:var(--lime2)">—</span>
+    </div>
+    <div style="display:flex;justify-content:space-between">
+      <span>Sa part :</span><span id="mcd-calc-elle" style="color:var(--rose)">—</span>
+    </div>
+  </div>
+
+  <div class="fg"><label class="fl">Justificatif / Note</label>
+    <input class="fi" id="mcd-note" placeholder="N° facture, remarque…">
+  </div>
+
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-lime" style="flex:1" onclick="saveCopaDep()">💾 Enregistrer</button>
+    <button class="btn btn-ghost" style="flex:.5" onclick="closeM('m-copa-dep')">Annuler</button>
+  </div>
+  <button class="btn btn-danger btn-full" style="margin-top:8px;display:none" id="mcd-del" onclick="deleteCopaDep()">🗑️ Supprimer</button>
+</div></div>
+
+<!-- Modal remboursement -->
+<div class="modal-ov" id="m-copa-remb"><div class="modal">
+  <div class="modal-bar"></div>
+  <div class="modal-title">✅ Remboursement</div>
+  <input type="hidden" id="mcr-id">
+  <p style="font-size:13px;color:var(--text3);font-weight:500;margin-bottom:14px">
+    Enregistre un virement ou paiement effectué pour solder des dépenses.
+  </p>
+  <div class="fg"><label class="fl">Montant remboursé (€) *</label>
+    <input class="fi" type="number" id="mcr-montant" placeholder="0.00" step="0.01" min="0">
+  </div>
+  <div class="grid2">
+    <div class="fg"><label class="fl">Date *</label>
+      <input class="fi" type="date" id="mcr-date">
+    </div>
+    <div class="fg"><label class="fl">Sens</label>
+      <select class="fi" id="mcr-sens">
+        <option value="moi_vers_elle">Moi → Elle (je rembourse)</option>
+        <option value="elle_vers_moi">Elle → Moi (elle rembourse)</option>
+      </select>
+    </div>
+  </div>
+  <div class="fg"><label class="fl">Mode de paiement</label>
+    <select class="fi" id="mcr-mode">
+      <option value="virement">💳 Virement</option>
+      <option value="especes">💵 Espèces</option>
+      <option value="lydia">📱 Lydia / PayLib</option>
+      <option value="cheque">📄 Chèque</option>
+      <option value="autre">Autre</option>
+    </select>
+  </div>
+  <div class="fg"><label class="fl">Note</label>
+    <input class="fi" id="mcr-note" placeholder="ex: Virement du 15/06…">
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-lime" style="flex:1" onclick="saveCopaRemb()">✅ Enregistrer</button>
+    <button class="btn btn-ghost" style="flex:.5" onclick="closeM('m-copa-remb')">Annuler</button>
+  </div>
+  <button class="btn btn-danger btn-full" style="margin-top:8px;display:none" id="mcr-del" onclick="deleteCopaRemb()">🗑️ Supprimer</button>
+</div></div>
+
 </body>
 </html>
 
 
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// MODULE COPARENTALITÉ — FRAIS EN GARDE ALTERNÉE
+// ═══════════════════════════════════════════════════════════════════
+
+const COPA_CATS = {
+  sante:       {ico:'🏥', name:'Santé / Médical'},
+  scolarite:   {ico:'📚', name:'Scolarité'},
+  activite:    {ico:'⚽', name:'Activité extra-scolaire'},
+  habillement: {ico:'👕', name:'Habillement'},
+  transport:   {ico:'🚗', name:'Transport'},
+  loisir:      {ico:'🎉', name:'Loisir / Vacances'},
+  alimentation:{ico:'🛒', name:'Alimentation'},
+  autre:       {ico:'📌', name:'Autre'},
+};
+
+let copaTab = 'solde';
+let copaCurrentPct = 50;  // Ma part par défaut
+
+// ── Helpers ──────────────────────────────────────────────────────
+function copaEnfants() {
+  // Utilise les membres enfants définis dans l'app
+  // OU les enfants configurés spécifiquement dans copa
+  const membersKids = S.members.filter(m => {
+    const a = acc(m.id); return (a?.role || m.role) === 'child';
+  });
+  if(membersKids.length) return membersKids.map(m => ({id:m.id, nom:m.name, avatar:m.avatar, couleur:m.color}));
+  return S.copa?.enfants || [];
+}
+
+function copaCalcSolde() {
+  // Pour chaque dépense, calcule ce que chacun doit à l'autre
+  // Règle : le payeur avance le total, l'autre rembourse SA part
+  let jeDoisAElle = 0;  // ce que je dois à elle (elle a payé, sa part lui revient mais j'avance ma part)
+  let elleMeDoit  = 0;  // ce qu'elle me doit (j'ai payé, elle doit rembourser sa part)
+
+  (S.copa?.depenses || []).filter(d => !d.rembourse).forEach(d => {
+    const montant = num(d.montant);
+    const pctMoi  = num(d.pctMoi) / 100;  // ma part en fraction
+    const pctElle = 1 - pctMoi;            // sa part en fraction
+
+    if(d.payeur === 'moi') {
+      // J'ai payé le total → elle me doit sa part
+      elleMeDoit += montant * pctElle;
+    } else {
+      // Elle a payé le total → je lui dois ma part
+      jeDoisAElle += montant * pctMoi;
+    }
+  });
+
+  // Appliquer les remboursements
+  (S.copa?.remboursements || []).forEach(r => {
+    const montant = num(r.montant);
+    if(r.sens === 'elle_vers_moi') {
+      // Elle m'a remboursé → réduit ce qu'elle me doit
+      elleMeDoit = Math.max(0, elleMeDoit - montant);
+    } else {
+      // Je l'ai remboursée → réduit ce que je lui dois
+      jeDoisAElle = Math.max(0, jeDoisAElle - montant);
+    }
+  });
+
+  // Solde net
+  const solde = elleMeDoit - jeDoisAElle;
+  return { jeDoisAElle, elleMeDoit, solde };
+}
+
+function copaCalcSoldeEnfant(enfantId) {
+  let jeDoisAElle = 0, elleMeDoit = 0;
+  (S.copa?.depenses || [])
+    .filter(d => !d.rembourse && (d.enfants || []).includes(enfantId))
+    .forEach(d => {
+      const montant = num(d.montant) / Math.max(1, (d.enfants||[]).length); // part de cet enfant
+      const pctMoi = num(d.pctMoi) / 100;
+      if(d.payeur === 'moi') elleMeDoit += montant * (1 - pctMoi);
+      else jeDoisAElle += montant * pctMoi;
+    });
+  return { jeDoisAElle, elleMeDoit, solde: elleMeDoit - jeDoisAElle };
+}
+
+function copaFmt(n) { return (n < 0 ? '-' : '') + Math.abs(n).toFixed(2) + ' €'; }
+
+// ── Render main view ──────────────────────────────────────────────
+function renderCopa() {
+  renderCopaGlobalSolde();
+  setCopaTab(copaTab);
+}
+
+function renderCopaGlobalSolde() {
+  const { jeDoisAElle, elleMeDoit, solde } = copaCalcSolde();
+  const exNom = S.copa?.exNom || 'Elle';
+  let cls, ico, txt, sub;
+
+  if(Math.abs(solde) < 0.01) {
+    cls='neutre'; ico='⚖️';
+    txt='0,00 €';
+    sub='Comptes équilibrés';
+  } else if(solde > 0) {
+    cls='positif'; ico='💚';
+    txt='+'+copaFmt(solde);
+    sub=exNom+' te doit '+copaFmt(solde);
+  } else {
+    cls='negatif'; ico='💸';
+    txt=copaFmt(solde);
+    sub='Tu dois '+copaFmt(Math.abs(solde))+' à '+exNom;
+  }
+
+  document.getElementById('copaGlobalSolde').innerHTML =
+    '<div class="copa-solde-card '+cls+'">'
+    +'<div><div class="copa-solde-lbl">Solde global</div>'
+    +'<div class="copa-solde-val">'+txt+'</div>'
+    +'<div class="copa-solde-sub">'+sub+'</div></div>'
+    +'<div class="copa-solde-ico">'+ico+'</div></div>';
+}
+
+function setCopaTab(t) {
+  copaTab = t;
+  ['solde','jepaye','ellepaye','history'].forEach(x => {
+    document.getElementById('copaTab-'+x).style.display = x===t ? 'block' : 'none';
+  });
+  document.querySelectorAll('#v-copa .vtab').forEach((b,i) =>
+    b.classList.toggle('on', ['solde','jepaye','ellepaye','history'][i]===t));
+  if(t==='solde')    renderCopaSoldeDetail();
+  if(t==='jepaye')   renderCopaList('moi');
+  if(t==='ellepaye') renderCopaList('elle');
+  if(t==='history')  renderCopaHistory();
+}
+
+// ── Onglet Solde détaillé ─────────────────────────────────────────
+function renderCopaSoldeDetail() {
+  const enfants = copaEnfants();
+  const exNom = S.copa?.exNom || 'Elle';
+
+  // Solde par enfant
+  let html = '';
+  if(enfants.length) {
+    html += '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:8px">Par enfant</div>';
+    html += enfants.map(e => {
+      const {solde} = copaCalcSoldeEnfant(e.id);
+      const pos = solde > 0.01, neg = solde < -0.01;
+      return '<div class="copa-stat" style="text-align:left;display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:12px 14px">'
+        +'<div style="font-size:26px">'+(e.avatar||'🧒')+'</div>'
+        +'<div style="flex:1"><div style="font-size:14px;font-weight:800">'+e.nom+'</div>'
+        +'<div style="font-size:11px;color:var(--text3);font-weight:500;margin-top:2px">'
+        +(Math.abs(solde)<0.01?'Équilibré':pos?exNom+' doit '+copaFmt(solde):'Tu dois '+copaFmt(Math.abs(solde)))
+        +'</div></div>'
+        +'<div style="font-size:18px;font-weight:900;color:'+(pos?'var(--lime2)':neg?'var(--rose)':'var(--text3)')+'">'
+        +(solde>0?'+':'')+copaFmt(solde)+'</div></div>';
+    }).join('');
+  }
+
+  // Stats mois en cours
+  const now = new Date(); const cm = now.getFullYear()+'-'+p2(now.getMonth()+1);
+  const depMois = (S.copa?.depenses||[]).filter(d => d.date?.startsWith(cm));
+  const totalMois = depMois.reduce((a,d) => a+num(d.montant), 0);
+  const moiMois = depMois.filter(d=>d.payeur==='moi').reduce((a,d)=>a+num(d.montant),0);
+  const elleMois = depMois.filter(d=>d.payeur==='elle').reduce((a,d)=>a+num(d.montant),0);
+
+  html += '<div class="copa-stats" style="margin-top:8px">'
+    +'<div class="copa-stat"><div class="copa-stat-n">'+totalMois.toFixed(0)+' €</div><div class="copa-stat-l">Total mois</div></div>'
+    +'<div class="copa-stat"><div class="copa-stat-n" style="color:var(--lime2)">'+moiMois.toFixed(0)+' €</div><div class="copa-stat-l">Avancé par moi</div></div>'
+    +'<div class="copa-stat"><div class="copa-stat-n" style="color:var(--rose)">'+elleMois.toFixed(0)+' €</div><div class="copa-stat-l">Avancé par '+exNom+'</div></div>'
+    +'</div>';
+
+  document.getElementById('copaEnfantsSolde').innerHTML = html;
+
+  // Dépenses non remboursées du mois
+  const el = document.getElementById('copaMoisEnCours');
+  if(!depMois.length) {
+    el.innerHTML = '<div class="empty" style="padding:12px 0"><p>Aucune dépense ce mois</p></div>';
+    return;
+  }
+  el.innerHTML = depMois.sort((a,b) => b.date.localeCompare(a.date)).map(d => renderCopaItemHTML(d)).join('');
+}
+
+// ── Render dépense item ───────────────────────────────────────────
+function renderCopaItemHTML(d) {
+  const cat = COPA_CATS[d.cat] || COPA_CATS.autre;
+  const montant = num(d.montant);
+  const pctMoi = num(d.pctMoi);
+  const pctElle = 100 - pctMoi;
+  const partMoi = montant * pctMoi / 100;
+  const partElle = montant * pctElle / 100;
+  const exNom = S.copa?.exNom || 'Elle';
+  const enfants = copaEnfants();
+  const enfantsTags = (d.enfants||[]).map(eid => {
+    const e = enfants.find(x=>x.id===eid);
+    return e ? '<span class="copa-child-tag" style="background:'+(e.couleur||'var(--mist2)')+'22;color:'+(e.couleur||'var(--text2)')+'">'+e.avatar+' '+e.nom+'</span>' : '';
+  }).join('');
+
+  const payeurLabel = d.payeur === 'moi' ? '📤 Payé par moi' : '📥 Payé par '+exNom;
+  const barColor = d.payeur === 'moi' ? 'var(--lime)' : 'var(--rose)';
+
+  return '<div class="copa-item" onclick="openCopaDepModal(\'' + d.payeur + '\',\'' + d.id + '\')">'
+    +'<div class="copa-item-main">'
+    +'<div class="copa-item-ico">'+cat.ico+'</div>'
+    +'<div class="copa-item-body">'
+    +'<div class="copa-item-desc">'+d.desc+'</div>'
+    +'<div class="copa-item-meta">'
+    +'<span>'+fmtD(d.date)+'</span>'
+    +'<span>'+payeurLabel+'</span>'
+    +(d.note?'<span>📎 '+d.note+'</span>':'')
+    +'</div>'
+    +(enfantsTags?'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">'+enfantsTags+'</div>':'')
+    +'<div style="margin-top:5px;font-size:11px;font-weight:600;color:var(--text3)">'
+    +'Ma part: '+partMoi.toFixed(2)+' € ('+pctMoi+'%) · '
+    +exNom+': '+partElle.toFixed(2)+' € ('+pctElle+'%)</div>'
+    +'</div>'
+    +'<div class="copa-item-amt">'
+    +'<div class="copa-item-total">'+montant.toFixed(2)+' €</div>'
+    +(d.rembourse?'<div class="copa-remb-badge paid">✅ Soldé</div>':'<div class="copa-remb-badge unpaid">En attente</div>')
+    +'</div></div>'
+    +'<div class="copa-item-bar" style="background:'+barColor+';opacity:.3"></div>'
+    +'</div>';
+}
+
+// ── Onglet liste dépenses ─────────────────────────────────────────
+function renderCopaList(payeur) {
+  const id = payeur==='moi' ? 'copaListMoi' : 'copaListElle';
+  const el = document.getElementById(id);
+  const deps = (S.copa?.depenses||[]).filter(d=>d.payeur===payeur)
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  if(!deps.length){
+    el.innerHTML='<div class="empty"><div class="emo">💸</div><p>Aucune dépense</p></div>';
+    return;
+  }
+  // Group by month
+  const byMonth = {};
+  deps.forEach(d => {
+    const m = d.date.slice(0,7);
+    if(!byMonth[m]) byMonth[m]=[];
+    byMonth[m].push(d);
+  });
+  el.innerHTML = Object.entries(byMonth).sort(([a],[b])=>b.localeCompare(a)).map(([m,ds])=>{
+    const [y,mo]=m.split('-');
+    const total=ds.reduce((a,d)=>a+num(d.montant),0);
+    return '<div class="month-section">'
+      +'<div class="month-header">'
+      +'<div class="month-header-lbl">'+MONTHS[parseInt(mo)-1]+' '+y+'</div>'
+      +'<div class="month-header-solde">'+total.toFixed(2)+' €</div>'
+      +'</div>'
+      +ds.map(d=>renderCopaItemHTML(d)).join('')
+      +'</div>';
+  }).join('');
+}
+
+// ── Onglet historique mensuel ─────────────────────────────────────
+function renderCopaHistory() {
+  const el = document.getElementById('copaHistoryList');
+  const exNom = S.copa?.exNom || 'Elle';
+  const deps = S.copa?.depenses || [];
+  const rembs = S.copa?.remboursements || [];
+
+  if(!deps.length && !rembs.length){
+    el.innerHTML='<div class="empty"><div class="emo">📋</div><p>Aucun historique</p></div>';
+    return;
+  }
+
+  // Build month list
+  const months = new Set();
+  deps.forEach(d=>months.add(d.date.slice(0,7)));
+  rembs.forEach(r=>months.add(r.date.slice(0,7)));
+  const sortedMonths = [...months].sort().reverse();
+
+  el.innerHTML = sortedMonths.map(m => {
+    const [y,mo] = m.split('-');
+    const mDeps = deps.filter(d=>d.date.startsWith(m));
+    const mRembs = rembs.filter(r=>r.date.startsWith(m));
+
+    let jeDois=0, elleDoit=0;
+    mDeps.forEach(d=>{
+      const montant=num(d.montant), pctMoi=num(d.pctMoi)/100;
+      if(d.payeur==='moi') elleDoit+=montant*(1-pctMoi);
+      else jeDois+=montant*pctMoi;
+    });
+    mRembs.forEach(r=>{
+      if(r.sens==='elle_vers_moi') elleDoit=Math.max(0,elleDoit-num(r.montant));
+      else jeDois=Math.max(0,jeDois-num(r.montant));
+    });
+    const soldeMois = elleDoit-jeDois;
+
+    const soldeCls = soldeMois>0.01?'var(--lime2)':soldeMois<-0.01?'var(--rose)':'var(--text3)';
+    const soldeLabel = Math.abs(soldeMois)<0.01?'Équilibré'
+      :soldeMois>0?exNom+' doit '+copaFmt(soldeMois):'Tu dois '+copaFmt(Math.abs(soldeMois));
+
+    let html = '<div class="month-section">'
+      +'<div class="month-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'">'
+      +'<div><div class="month-header-lbl">'+MONTHS[parseInt(mo)-1]+' '+y+'</div>'
+      +'<div style="font-size:11px;color:'+soldeCls+';font-weight:700;margin-top:2px">'+soldeLabel+'</div></div>'
+      +'<div class="month-header-solde" style="color:'+soldeCls+'">'+(soldeMois>0?'+':'')+copaFmt(soldeMois)+'</div>'
+      +'</div>'
+      +'<div>';
+
+    // Dépenses du mois
+    if(mDeps.length) html += mDeps.map(d=>renderCopaItemHTML(d)).join('');
+
+    // Remboursements du mois
+    if(mRembs.length) {
+      html += mRembs.map(r=>'<div class="copa-item" onclick="openCopaRembModal(\''+r.id+'\')">'
+        +'<div class="copa-item-main">'
+        +'<div class="copa-item-ico">✅</div>'
+        +'<div class="copa-item-body">'
+        +'<div class="copa-item-desc">Remboursement</div>'
+        +'<div class="copa-item-meta">'
+        +'<span>'+fmtD(r.date)+'</span>'
+        +'<span>'+(r.sens==='elle_vers_moi'?exNom+' → Moi':'Moi → '+exNom)+'</span>'
+        +'<span>'+(r.mode||'')+'</span>'
+        +(r.note?'<span>'+r.note+'</span>':'')
+        +'</div></div>'
+        +'<div class="copa-item-amt">'
+        +'<div class="copa-item-total" style="color:var(--lime2)">'+copaFmt(num(r.montant))+'</div>'
+        +'<div class="copa-remb-badge paid">✅ Virement</div>'
+        +'</div></div></div>'
+      ).join('');
+    }
+    html += '</div></div>';
+    return html;
+  }).join('');
+}
+
+// ── Modal dépense ─────────────────────────────────────────────────
+function openCopaDepModal(payeur='moi', id=null) {
+  const d = id ? (S.copa?.depenses||[]).find(x=>x.id===id) : null;
+  const exNom = S.copa?.exNom || 'Elle';
+  document.getElementById('mcd-id').value = d?.id||'';
+  document.getElementById('mcd-payeur').value = payeur;
+  document.getElementById('mcd-title').textContent = d ? 'Modifier' : (payeur==='moi'?'Je paie':''+exNom+' paie');
+  document.getElementById('mcd-desc').value = d?.desc||'';
+  document.getElementById('mcd-montant').value = d?.montant||'';
+  document.getElementById('mcd-date').value = d?.date||today();
+  document.getElementById('mcd-cat').value = d?.cat||'sante';
+  document.getElementById('mcd-note').value = d?.note||'';
+  document.getElementById('mcd-del').style.display = d?'block':'none';
+  document.getElementById('mcd-calc').style.display = 'none';
+
+  // Enfants chips
+  const enfants = copaEnfants();
+  document.getElementById('mcd-enfants').innerHTML = enfants.length
+    ? enfants.map(e=>'<div class="chip '+((d?.enfants||[]).includes(e.id)?'on':'')+'" data-eid="'+e.id+'" onclick="this.classList.toggle(\'on\')">'+(e.avatar||'🧒')+' '+e.nom+'</div>').join('')
+    : '<p style="font-size:12px;color:var(--text3)">Aucun enfant configuré — configure les membres avec le rôle Enfant dans Paramètres</p>';
+
+  // Partage
+  copaCurrentPct = d ? num(d.pctMoi) : 50;
+  setCopaPartage(copaCurrentPct === 100 ? 100 : copaCurrentPct === 0 ? 0 : copaCurrentPct === 50 ? 50 : 'custom');
+  if(d && ![0,50,100].includes(copaCurrentPct)) {
+    document.getElementById('mcd-pct-custom').value = copaCurrentPct;
+  }
+  updateCopaPartCalc();
+  openM('m-copa-dep');
+}
+
+function setCopaPartage(pct) {
+  document.querySelectorAll('.copa-pct-btn').forEach(b=>{
+    const bPct = b.dataset.pct==='custom'?'custom':parseInt(b.dataset.pct);
+    b.classList.toggle('on', b.dataset.pct==='custom' ? pct==='custom' : parseInt(b.dataset.pct)===pct);
+  });
+  const customDiv = document.getElementById('mcd-custom-pct');
+  if(pct==='custom') {
+    customDiv.style.display='block';
+    copaCurrentPct = parseInt(document.getElementById('mcd-pct-custom').value)||50;
+  } else {
+    customDiv.style.display='none';
+    copaCurrentPct = pct;
+  }
+  updateCopaPartCalc();
+}
+
+function updateCopaPartCalc() {
+  const montant = parseFloat(document.getElementById('mcd-montant')?.value)||0;
+  const customActive = document.getElementById('mcd-custom-pct')?.parentElement?.style.display!=='none';
+  if(customActive) {
+    copaCurrentPct = parseInt(document.getElementById('mcd-pct-custom')?.value)||50;
+  }
+  const calcDiv = document.getElementById('mcd-calc');
+  if(montant>0 && calcDiv) {
+    calcDiv.style.display='block';
+    const partMoi = (montant * copaCurrentPct / 100).toFixed(2);
+    const partElle = (montant * (100-copaCurrentPct) / 100).toFixed(2);
+    document.getElementById('mcd-calc-moi').textContent = partMoi+' €';
+    document.getElementById('mcd-calc-elle').textContent = partElle+' €';
+  }
+}
+
+function saveCopaDep() {
+  const desc = document.getElementById('mcd-desc').value.trim();
+  const montant = parseFloat(document.getElementById('mcd-montant').value);
+  const date = document.getElementById('mcd-date').value;
+  if(!desc||!montant||!date){snack('⚠️ Description, montant et date obligatoires');return;}
+
+  const chips = [...document.querySelectorAll('#mcd-enfants .chip.on')];
+  const enfants = chips.map(c=>c.dataset.eid).filter(Boolean);
+  if(!enfants.length){snack('⚠️ Sélectionne au moins un enfant');return;}
+
+  // Get pct
+  let pctMoi = copaCurrentPct;
+  if(document.getElementById('mcd-custom-pct').parentElement.style.display!=='none') {
+    pctMoi = parseInt(document.getElementById('mcd-pct-custom').value)||50;
+  }
+
+  const id = document.getElementById('mcd-id').value || uid();
+  const d = {
+    id, desc, montant, date, enfants, pctMoi,
+    cat: document.getElementById('mcd-cat').value,
+    payeur: document.getElementById('mcd-payeur').value,
+    note: document.getElementById('mcd-note').value,
+    rembourse: false,
+  };
+
+  if(!S.copa) S.copa={depenses:[],remboursements:[],exNom:'Elle',moiNom:'Moi',enfants:[]};
+  if(!S.copa.depenses) S.copa.depenses=[];
+  const idx = S.copa.depenses.findIndex(x=>x.id===id);
+  if(idx>=0) S.copa.depenses[idx]=d; else S.copa.depenses.push(d);
+  save(); closeM('m-copa-dep'); renderCopa(); snack('✅ Dépense enregistrée');
+}
+
+function deleteCopaDep() {
+  const id = document.getElementById('mcd-id').value;
+  S.copa.depenses = (S.copa?.depenses||[]).filter(d=>d.id!==id);
+  save(); closeM('m-copa-dep'); renderCopa(); snack('🗑️ Dépense supprimée');
+}
+
+// ── Modal remboursement ───────────────────────────────────────────
+function openCopaRemboursementModal(id=null) {
+  const r = id ? (S.copa?.remboursements||[]).find(x=>x.id===id) : null;
+  const {solde} = copaCalcSolde();
+  document.getElementById('mcr-id').value = r?.id||'';
+  document.getElementById('mcr-montant').value = r?.montant || (Math.abs(solde)>0?Math.abs(solde).toFixed(2):'');
+  document.getElementById('mcr-date').value = r?.date||today();
+  document.getElementById('mcr-sens').value = r?.sens || (solde<0?'moi_vers_elle':'elle_vers_moi');
+  document.getElementById('mcr-mode').value = r?.mode||'virement';
+  document.getElementById('mcr-note').value = r?.note||'';
+  document.getElementById('mcr-del').style.display = r?'block':'none';
+  openM('m-copa-remb');
+}
+function openCopaRembModal(id) { openCopaRemboursementModal(id); }
+
+function saveCopaRemb() {
+  const montant = parseFloat(document.getElementById('mcr-montant').value);
+  const date = document.getElementById('mcr-date').value;
+  if(!montant||!date){snack('⚠️ Montant et date obligatoires');return;}
+  const id = document.getElementById('mcr-id').value||uid();
+  const r = {id, montant, date,
+    sens: document.getElementById('mcr-sens').value,
+    mode: document.getElementById('mcr-mode').value,
+    note: document.getElementById('mcr-note').value};
+  if(!S.copa) S.copa={depenses:[],remboursements:[],exNom:'Elle',moiNom:'Moi',enfants:[]};
+  if(!S.copa.remboursements) S.copa.remboursements=[];
+  const idx = S.copa.remboursements.findIndex(x=>x.id===id);
+  if(idx>=0) S.copa.remboursements[idx]=r; else S.copa.remboursements.push(r);
+  save(); closeM('m-copa-remb'); renderCopa(); snack('✅ Remboursement enregistré');
+}
+function deleteCopaRemb() {
+  S.copa.remboursements=(S.copa?.remboursements||[]).filter(r=>r.id!==document.getElementById('mcr-id').value);
+  save(); closeM('m-copa-remb'); renderCopa(); snack('🗑️ Supprimé');
+}
+
+// ── Export Excel ──────────────────────────────────────────────────
+function exportCopaExcel() {
+  loadSheetJS(err=>{
+    if(err){setExcelStatus('❌ '+err.message,true);return;}
+    try {
+      const wb = XLSX.utils.book_new();
+      const exNom = S.copa?.exNom||'Elle';
+      const enfants = copaEnfants();
+      const enNom = id => enfants.find(e=>e.id===id)?.nom||id;
+
+      // Feuille dépenses
+      const deps = (S.copa?.depenses||[]).sort((a,b)=>a.date.localeCompare(b.date));
+      const depsData = deps.map(d=>{
+        const pctMoi=num(d.pctMoi), montant=num(d.montant);
+        return {
+          'Date':          ss(d.date),
+          'Description':   ss(d.desc),
+          'Categorie':     COPA_CATS[d.cat]?.name||ss(d.cat),
+          'Enfant(s)':     (d.enfants||[]).map(enNom).join(', '),
+          'Payeur':        d.payeur==='moi'?'Moi':exNom,
+          'Montant EUR':   montant,
+          'Ma part pct':   pctMoi,
+          'Ma part EUR':   parseFloat((montant*pctMoi/100).toFixed(2)),
+          ['Part '+exNom+' pct']: 100-pctMoi,
+          ['Part '+exNom+' EUR']: parseFloat((montant*(100-pctMoi)/100).toFixed(2)),
+          'Solde':         d.payeur==='moi'?parseFloat((montant*(100-pctMoi)/100).toFixed(2)):-parseFloat((montant*pctMoi/100).toFixed(2)),
+          'Note':          ss(d.note),
+          'Rembourse':     d.rembourse?'Oui':'Non',
+        };
+      });
+      if(depsData.length){
+        const ws1=XLSX.utils.json_to_sheet(depsData);
+        ws1['!cols']=[{wch:12},{wch:35},{wch:20},{wch:20},{wch:8},{wch:12},{wch:10},{wch:12},{wch:10},{wch:12},{wch:12},{wch:20},{wch:8}];
+        XLSX.utils.book_append_sheet(wb,ws1,'Depenses');
+      }
+
+      // Feuille remboursements
+      const rembs = (S.copa?.remboursements||[]).sort((a,b)=>a.date.localeCompare(b.date));
+      const rembsData = rembs.map(r=>({
+        'Date':    ss(r.date),
+        'Sens':    r.sens==='elle_vers_moi'?exNom+' → Moi':'Moi → '+exNom,
+        'Montant': num(r.montant),
+        'Mode':    ss(r.mode),
+        'Note':    ss(r.note),
+      }));
+      if(rembsData.length){
+        const ws2=XLSX.utils.json_to_sheet(rembsData);
+        ws2['!cols']=[{wch:12},{wch:20},{wch:12},{wch:15},{wch:25}];
+        XLSX.utils.book_append_sheet(wb,ws2,'Remboursements');
+      }
+
+      // Feuille résumé mensuel
+      const months=new Set();
+      deps.forEach(d=>months.add(d.date.slice(0,7)));
+      rembs.forEach(r=>months.add(r.date.slice(0,7)));
+      const summaryData=[...months].sort().map(m=>{
+        const [y,mo]=m.split('-');
+        const mDeps=deps.filter(d=>d.date.startsWith(m));
+        const mRembs=rembs.filter(r=>r.date.startsWith(m));
+        let jeDois=0, elleDoit=0;
+        mDeps.forEach(d=>{
+          const mt=num(d.montant), pct=num(d.pctMoi)/100;
+          if(d.payeur==='moi') elleDoit+=mt*(1-pct); else jeDois+=mt*pct;
+        });
+        mRembs.forEach(r=>{
+          if(r.sens==='elle_vers_moi') elleDoit=Math.max(0,elleDoit-num(r.montant));
+          else jeDois=Math.max(0,jeDois-num(r.montant));
+        });
+        const solde=elleDoit-jeDois;
+        return {
+          'Mois': MONTHS[parseInt(mo)-1]+' '+y,
+          'Depenses totales': mDeps.reduce((a,d)=>a+num(d.montant),0).toFixed(2),
+          'Avance par moi': mDeps.filter(d=>d.payeur==='moi').reduce((a,d)=>a+num(d.montant),0).toFixed(2),
+          ['Avance par '+exNom]: mDeps.filter(d=>d.payeur==='elle').reduce((a,d)=>a+num(d.montant),0).toFixed(2),
+          [exNom+' me doit EUR']: elleDoit.toFixed(2),
+          ['Je dois a '+exNom+' EUR']: jeDois.toFixed(2),
+          'Solde EUR': solde.toFixed(2),
+          'Situation': Math.abs(solde)<0.01?'Equilibre':solde>0?exNom+' doit payer':'Moi je dois payer',
+        };
+      });
+      if(summaryData.length){
+        const ws3=XLSX.utils.json_to_sheet(summaryData);
+        ws3['!cols']=[{wch:15},{wch:16},{wch:15},{wch:15},{wch:18},{wch:18},{wch:12},{wch:25}];
+        XLSX.utils.book_append_sheet(wb,ws3,'Resume Mensuel');
+      }
+
+      if(!wb.SheetNames.length){snack('⚠️ Aucune donnée à exporter');return;}
+
+      const fname='CoparentaliteFrais_'+today()+'.xlsx';
+      const arr=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+      const blob=new Blob([arr],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      const url=URL.createObjectURL(blob);
+      const link=document.createElement('a'); link.href=url; link.download=fname; link.style.display='none';
+      document.body.appendChild(link); link.click();
+      setTimeout(()=>{document.body.removeChild(link);URL.revokeObjectURL(url);},3000);
+      snack('📊 Export coparentalité OK');
+    } catch(e){console.error(e);snack('❌ Erreur export: '+e.message);}
+  });
+}
+
+// copa wired via renderView map below
+</script>
