@@ -1,6 +1,6 @@
 name: "FamilyHub"
 description: "Application de gestion familiale — agenda, taches, budget, courses, documents et plus."
-version: "3.6.0"
+version: "3.8.0"
 slug: "familyhub"
 url: "https://github.com/ton-compte/familyhub-addon"
 arch:
